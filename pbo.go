@@ -99,7 +99,7 @@ func NewPbo(path string) (*Pbo, error) {
 			}
 
 			extension.ReadExtendedFields(reader)
-			fmt.Println(extension)
+			pbo.HeaderExtension = &extension
 		} else {
 			pbo.Entries = append(pbo.Entries, entry)
 		}
