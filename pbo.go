@@ -12,9 +12,9 @@ import (
 type Flag uint32
 
 const (
-	FlagUncompressed Flag = 0x00000000
-	FlagPacked            = 0x43707273
-	FlagProductEntry      = 0x56657273 // resistance/elite/arma
+	Uncompressed Flag = 0x00000000
+	Packed       Flag = 0x43707273
+	ProductEntry Flag = 0x56657273 // resistance/elite/arma
 )
 
 type FileEntry struct {
@@ -81,7 +81,7 @@ func NewPbo(path string) (*Pbo, error) {
 		entry := readEntry(reader)
 		if entry.IsNull() {
 			break
-		} else if entry.Flag == FlagProductEntry {
+		} else if entry.Flag == ProductEntry {
 			extension := HeaderExtension{
 				FileEntry: entry,
 			}

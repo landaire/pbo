@@ -5,15 +5,15 @@ package pbo
 import "fmt"
 
 const (
-	_Flag_name_0 = "FlagUncompressed"
-	_Flag_name_1 = "FlagPacked"
-	_Flag_name_2 = "FlagProductEntry"
+	_Flag_name_0 = "Uncompressed"
+	_Flag_name_1 = "Packed"
+	_Flag_name_2 = "ProductEntry"
 )
 
 var (
-	_Flag_index_0 = [...]uint8{16}
-	_Flag_index_1 = [...]uint8{10}
-	_Flag_index_2 = [...]uint8{16}
+	_Flag_index_0 = [...]uint8{12}
+	_Flag_index_1 = [...]uint8{6}
+	_Flag_index_2 = [...]uint8{12}
 )
 
 func (i Flag) String() string {
