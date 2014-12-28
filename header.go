@@ -20,17 +20,16 @@ const (
 type FileEntry struct {
 	Name          string
 	Flag          Flag
-	OriginalSize  uint32
+	UnpackedSize  uint32
 	ReservedField uint32
 	Timestamp     time.Time
-	DataSize      uint32
-	data          *interface{}
+	DataBlockSize uint32
 }
 
 func (f FileEntry) IsNull() bool {
 	return f.Name == "" && f.Flag == 0 &&
-		f.OriginalSize == 0 && f.ReservedField == 0 &&
-		f.Timestamp.Unix() == 0 && f.DataSize == 0
+		f.UnpackedSize == 0 && f.ReservedField == 0 &&
+		f.Timestamp.Unix() == 0 && f.DataBlockSize == 0
 }
 
 func (f FileEntry) String() string {
@@ -38,10 +37,10 @@ func (f FileEntry) String() string {
 		"Name: %s\nFlag: 0x%08X (%s)\nOriginal Size: %d\nReserved: %d\nTimestamp: %d (%s)\nData Size: %d",
 		f.Name,
 		uint32(f.Flag), f.Flag.String(),
-		f.OriginalSize,
+		f.UnpackedSize,
 		f.ReservedField,
 		f.Timestamp.Unix(), f.Timestamp,
-		f.DataSize,
+		f.DataBlockSize,
 	)
 }
 
@@ -76,10 +75,10 @@ func readEntry(r *bufio.Reader) FileEntry {
 	var timestamp uint32
 	fields := []interface{}{
 		&entry.Flag,
-		&entry.OriginalSize,
+		&entry.UnpackedSize,
 		&entry.ReservedField,
 		&timestamp,
-		&entry.DataSize,
+		&entry.DataBlockSize,
 	}
 
 	for _, field := range fields {
