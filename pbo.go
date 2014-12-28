@@ -33,6 +33,18 @@ func (f FileEntry) IsNull() bool {
 		f.Timestamp.Unix() == 0 && f.DataSize == 0
 }
 
+func (f FileEntry) String() string {
+	return fmt.Sprintf(
+		"Name: %s\nFlag: 0x%08X (%s)\nOriginal Size: %d\nReserved: %d\nTimestamp: %d (%s)\nData Size: %d",
+		f.Name,
+		uint32(f.Flag), f.Flag.String(),
+		f.OriginalSize,
+		f.ReservedField,
+		f.Timestamp.Unix(), f.Timestamp,
+		f.DataSize,
+	)
+}
+
 type HeaderExtension struct {
 	FileEntry
 	ExtendedFields map[string]string
