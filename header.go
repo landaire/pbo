@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 	"time"
 )
@@ -37,10 +38,34 @@ func (f FileEntry) IsNull() bool {
 
 // Implement the io.Reader interface
 func (f FileEntry) Read(p []byte) (n int, err error) {
-	// Set the PBO file offset to the data block offset
-	f.pbo.file.Seek(f.dataOffset, os.SEEK_SET)
-	reader := bufio.NewReader(f.pbo.file)
-	return reader.Read(p)
+	file := f.pbo.file
+
+	offset, err := file.Seek(0, os.SEEK_CUR)
+	if offset > f.dataOffset+int64(f.DataBlockSize) {
+		return 0, io.EOF
+	}
+
+	if uint32(len(p)) > f.DataBlockSize {
+		return file.Read(p[:f.DataBlockSize])
+	}
+
+	return file.Read(p)
+}
+
+func (f *FileEntry) Seek(offset int64, whence int) (int64, error) {
+	switch whence {
+	case os.SEEK_SET:
+		if offset < 0 || offset > int64(f.DataBlockSize) {
+			return 0, os.ErrInvalid
+		}
+
+		f.pbo.file.Seek(f.dataOffset+offset, whence)
+		return offset, nil
+
+	// TODO: Support other whence values
+	default:
+		return 0, os.ErrInvalid
+	}
 }
 
 // Gets the length of the entry block
