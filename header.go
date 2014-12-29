@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -24,12 +25,29 @@ type FileEntry struct {
 	ReservedField uint32
 	Timestamp     time.Time
 	DataBlockSize uint32
+	dataOffset    int64
+	pbo           *Pbo
 }
 
 func (f FileEntry) IsNull() bool {
 	return f.Name == "" && f.Flag == 0 &&
 		f.UnpackedSize == 0 && f.ReservedField == 0 &&
 		f.Timestamp.Unix() == 0 && f.DataBlockSize == 0
+}
+
+// Implement the io.Reader interface
+func (f FileEntry) Read(p []byte) (n int, err error) {
+	// Set the PBO file offset to the data block offset
+	f.pbo.file.Seek(f.dataOffset, os.SEEK_SET)
+	reader := bufio.NewReader(f.pbo.file)
+	return reader.Read(p)
+}
+
+// Gets the length of the entry block
+func (f FileEntry) EntrySize() int {
+	// Length of the name includes a null terminator
+	// the 4 * 5 is 4 bytes (uint32) for the 5 fields
+	return len(f.Name) + 1 + (4 * 5)
 }
 
 func (f FileEntry) String() string {
@@ -65,6 +83,21 @@ func (e *HeaderExtension) ReadExtendedFields(r *bufio.Reader) {
 	}
 
 	r.ReadByte()
+}
+
+// Gets the length of the entry block
+func (f HeaderExtension) EntrySize() int {
+	// Length of the name includes a null terminator
+	// the 4 * 5 is 4 bytes (uint32) for the 5 fields
+	baseSize := f.FileEntry.EntrySize()
+
+	for key, val := range f.ExtendedFields {
+		// + 2 for the null terminator for each key/val
+		baseSize += len(key) + len(val) + 2
+	}
+
+	// There's a null terminator at the end of the block
+	return baseSize + 1
 }
 
 func readEntry(r *bufio.Reader) FileEntry {
